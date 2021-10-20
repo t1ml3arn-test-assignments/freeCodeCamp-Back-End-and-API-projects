@@ -5,6 +5,9 @@
 require('dotenv').config();
 var express = require('express');
 var app = express();
+const dns = require('dns').promises
+const bodyParser = require('body-parser')
+const url = require('url')
 
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC 
@@ -36,6 +39,52 @@ app.get('/api/whoami', (req, res) => {
   })
 })
 
+const SHORT_URLS = { counter: 0 };
+function shortenURL(url) {
+  if (!(url in SHORT_URLS)) {
+    SHORT_URLS.counter += 1
+    let id = SHORT_URLS.counter.toString(16);
+    SHORT_URLS[id] = url
+    SHORT_URLS[url] = id
+  }
+
+  return SHORT_URLS[url]
+}
+app.post('/api/shorturl', bodyParser.urlencoded({ extended: false}), async (req, res) => {
+
+  const { url: urlToShort } = req.body
+  
+  try {
+    if(!/^https?:\/\/.+/.test(urlToShort))
+      throw 'Invalid URL'
+
+    if (!/^https?:\/\/localhost.*/.test(urlToShort)) {
+      const hostName = new url.URL(urlToShort).hostname
+      await dns.lookup(hostName)
+    }
+
+    res.send({
+      original_url : urlToShort, 
+      short_url : shortenURL(urlToShort)
+    })
+  } catch (err) {
+    console.log(err);
+    res.json({ error: 'Invalid URL'})
+  }
+})
+
+app.get('/api/shorturl/:short', (req, res) => {
+  const {short: shortURL} = req.params
+  if (!shortURL)
+    res.json({ error: 'Invalid short URL' })
+  else {
+    const decodedURL = SHORT_URLS[shortURL]
+    if (!decodedURL)
+      res.json({ error: 'Invalid short URL' })
+    else 
+      res.redirect(decodedURL)
+  }
+})
 
 // listen for requests :)
 var listener = app.listen(process.env.PORT || 3000, function () {
