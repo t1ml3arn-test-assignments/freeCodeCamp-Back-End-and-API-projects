@@ -28,6 +28,8 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
+// Request Header Parser Microservice
+
 app.get('/api/whoami', (req, res) => {
   // A request to /api/whoami should return a JSON object with your IP address in the ipaddress key.
   // A request to /api/whoami should return a JSON object with your preferred language in the language key.
@@ -38,6 +40,8 @@ app.get('/api/whoami', (req, res) => {
     software: req.headers['user-agent'] || '',
   })
 })
+
+// URL Shortener Microservice
 
 const SHORT_URLS = { counter: 0 };
 function shortenURL(url) {
