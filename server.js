@@ -90,6 +90,37 @@ app.get('/api/shorturl/:short', (req, res) => {
   }
 })
 
+// Timestamp Microservice
+
+const INVALID_DATE_RESPONSE = { error: 'Invalid Date' };
+
+function parseDate(date) {
+  if (!date)
+    return new Date()
+  else if (/^\d+$/.test(date))
+    return new Date(+date)
+  else 
+    return new Date(date)
+}
+
+app.get('/api/:date?', (req, res) => {
+  console.log(req.params);
+  const { date } = req.params
+  // NOTE JS date is in MILIseconds while UNIX time is in seconds
+
+  const parsedDate = parseDate(date)
+
+  if (parsedDate.toString() !== "Invalid Date") {
+    // looks like a valid date
+    res.json({
+      unix: parsedDate.getTime(),
+      utc: parsedDate.toUTCString()
+    })
+  } else {
+    res.json(INVALID_DATE_RESPONSE)
+  }
+})
+
 // listen for requests :)
 var listener = app.listen(process.env.PORT || 3000, function () {
   console.log('Your app is listening on port ' + listener.address().port);
