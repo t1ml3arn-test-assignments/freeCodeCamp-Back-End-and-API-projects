@@ -103,7 +103,7 @@ function parseDate(date) {
     return new Date(date)
 }
 
-app.get('/api/:date?', (req, res) => {
+app.get('/api/time/:date?', (req, res) => {
   console.log(req.params);
   const { date } = req.params
   // NOTE JS date is in MILIseconds while UNIX time is in seconds
