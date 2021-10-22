@@ -147,6 +147,36 @@ usersRouter.get('/', (_,res) => {
   res.json(Object.values(users))
 })
 
+// post an exercise
+usersRouter.post('/:_id/exercises', (req, res) => {
+  const { _id } = req.params
+  const user = users[_id]
+
+  if (user) {
+
+    const {
+      duration, description,
+      date = new Date().getTime()
+    } = req.body
+
+    const exerc = { ...user, 
+      description: String(description),
+      duration: Number(duration),
+      date: new Date(date).getTime()
+    }
+
+    if (!(_id in exercises))
+      exercises[_id] = []
+
+    exercises[_id].push(exerc)
+
+    res.json({
+      ...exerc,
+      date: new Date(exerc.date).toDateString()
+    })
+  }
+})
+
 app.use('/api/users', usersRouter)
 
 // listen for requests :)
