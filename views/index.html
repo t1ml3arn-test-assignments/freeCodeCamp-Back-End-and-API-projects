@@ -24,7 +24,7 @@
     <p>
       <code>{"ipaddress":"::ffff:159.20.14.100","language":"en-US,en;q=0.5",<br>"software":"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0"}</code>
     </p>
-    
+
     <section>
       <h2>URL Shortener Microservice</h2>
       <form action="api/shorturl" method="POST">
@@ -36,6 +36,44 @@
         </fieldset>
       </form>
     </section>
+
+    <section>
+      <h2>Exercise tracker</h2>
+      <form action="/api/users" method="post">
+        <h3>Create a New User</h3>
+        <p><code>POST /api/users</code></p>
+        <input id="uname" type="text" name="username" placeholder="username" />
+        <input type="submit" value="Submit" />
+      </form>
+      <form id="exercise-form" method="post">
+        <h3>Add exercises</h3>
+        <p><code>POST /api/users/:_id/exercises</code></p>
+        <input id="uid" type="text" name=":_id" placeholder=":_id" />
+        <input id="desc" type="text" name="description" placeholder="description*" />
+        <input id="dur" type="text" name="duration" placeholder="duration* (mins.)" />
+        <input id="date" type="text" name="date" placeholder="date (yyyy-mm-dd)" />
+        <input type="submit" value="Submit" />
+      </form>
+      <p>
+        <strong>GET user's exercise log: </strong>
+        <code>GET /api/users/:_id/logs?[from][&amp;to][&amp;limit]</code>
+      </p>
+      <p><strong>[ ]</strong> = optional</p>
+      <p><strong>from, to</strong> = dates (yyyy-mm-dd); <strong>limit</strong> = number</p>
+
+      <script>
+        const exerciseForm = document.getElementById("exercise-form");
+    
+        exerciseForm.addEventListener("submit", () => {
+          const userId = document.getElementById("uid").value;
+          exerciseForm.action = `/api/users/${userId}/exercises`;
+    
+          exerciseForm.submit();
+        });
+      </script>
+
+    </section>
+
   </div>
 
   <div class="footer">
