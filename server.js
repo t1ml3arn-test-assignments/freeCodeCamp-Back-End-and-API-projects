@@ -121,6 +121,34 @@ app.get('/api/time/:date?', (req, res) => {
   }
 })
 
+// Exercise Tracker
+
+const users = {}
+const exercises = {}
+
+const usersRouter = express.Router()
+
+// register form data parser fot this router
+usersRouter.use(bodyParser.urlencoded({ extended: false }))
+
+// create user
+usersRouter.post('/', (req, res) => {
+  const { username } = req.body
+
+  const _id = uuid.v4();
+  const newUser = { username, _id }
+  users[_id] = newUser
+
+  res.json(newUser)
+})
+
+// get all users
+usersRouter.get('/', (_,res) => {
+  res.json(Object.values(users))
+})
+
+app.use('/api/users', usersRouter)
+
 // listen for requests :)
 var listener = app.listen(process.env.PORT || 3000, function () {
   console.log('Your app is listening on port ' + listener.address().port);
