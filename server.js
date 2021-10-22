@@ -8,6 +8,7 @@ var app = express();
 const dns = require('dns').promises
 const bodyParser = require('body-parser')
 const url = require('url')
+const uuid = require('uuid')
 
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC 
@@ -180,6 +181,103 @@ usersRouter.post('/:_id/exercises', (req, res) => {
       date: new Date(exerc.date).toDateString()
     })
   }
+})
+
+function parseDateParam(date) {
+  if (!date)  return;
+
+  date = new Date(date)
+  if (date.toString().toLowerCase() !== 'invalid date') {
+    return date.getTime()
+  }
+  else
+    return
+}
+
+function parseLimitParam(limit) {
+  if (!limit) return;
+  limit = Number(limit)
+  if (isNaN(limit))
+    limit = Infinity
+
+  return limit
+}
+
+function formatExerc(x) {
+  return ({ 
+    description: x.description, 
+    date: new Date(x.date).toDateString(), 
+    duration: x.duration 
+  })
+}
+
+// process request to a filtered logs
+usersRouter.get('/:id/logsss', (req, res, next) => {
+  console.log('query', req.query);
+  if (Object.keys(req.query).length === 0) {
+    // passing control to the next middleware in this stack
+    console.log('next middleware');
+    next()
+  }
+  else {
+    const { id } = req.params
+
+    let log = exercises[id]
+
+    const from = parseDateParam(req.query.from),
+      to = parseDateParam(req.query.to),
+      limit = parseLimitParam(req.query.limit);
+
+    console.log(from, to, limit);
+
+    if (from) log = log.filter(x => x.date >= from )
+    if (to)   log = log.filter(x => x.date <= to)
+    if (limit)log = log.slice(0, limit)
+
+    res.json(log.map(formatExerc))
+    // passing control to the next route
+    console.log('next route');
+    next('route')
+  }
+}, 
+// next middleware in stack returns all logs
+// for a give user
+(req, res, next) => {
+  const { id } = req.params
+
+  const user = users[id]
+  const execs = exercises[id]
+
+  log = execs.map(formatExerc)
+  console.log('get all logs');
+  res.json({ 
+    ...user,
+    count: execs.length,
+    log
+  })
+})
+
+usersRouter.get('/:id/logs', (req, res) => {
+  const { id } = req.params
+
+  let log = exercises[id]
+
+  const from = parseDateParam(req.query.from),
+    to = parseDateParam(req.query.to),
+    limit = parseLimitParam(req.query.limit);
+
+  if (from || to || limit) {
+    console.log('get filtered log');
+    if (from) log = log.filter(x => x.date >= from )
+    if (to)   log = log.filter(x => x.date <= to)
+    if (limit)log = log.slice(0, limit)
+  } 
+
+  res.json({ 
+    ...users[id],
+    count: log.length,
+    log: log.map(formatExerc)
+  })
 })
 
 app.use('/api/users', usersRouter)
